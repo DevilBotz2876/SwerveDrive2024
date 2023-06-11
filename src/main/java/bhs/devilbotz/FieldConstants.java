@@ -38,12 +38,10 @@ public final class FieldConstants {
     public static final double tarmacFenderToTip = Units.inchesToMeters(84.75);
     public static final double tarmacFullSideLength =
             tarmacInnerDiameter * (Math.sqrt(2.0) - 1.0); // If the tarmac formed a full octagon
-    public static final double tarmacMissingSideLength =
-            tarmacFullSideLength - tarmacMarkedSideLength; // Length removed b/c of corner cutoff
-    public static final double referenceToCargoY =
-            (tarmacFullSideLength / 2.0) - cornerToCargoY;
     public static final double tarmacMarkedSideLength =
             Units.inchesToMeters(82.83); // Length of tape marking outside of tarmac
+    public static final double tarmacMissingSideLength =
+            tarmacFullSideLength - tarmacMarkedSideLength; // Length removed b/c of corner cutoff
     public static final double hubSquareLength =
             tarmacOuterDiameter - (tarmacFenderToTip * 2.0);
     // Reference rotations (angle from hub to each reference point and fender side)
@@ -60,26 +58,14 @@ public final class FieldConstants {
             new Pose2d(hubCenter, referenceDRotation).transformBy(
                     GeomUtil.transformFromTranslation(tarmacInnerDiameter / 2.0, 0.0));
     public static final Pose2d referenceDOpposite = opposite(referenceD);
-    public static final Pose2d cargoE = referenceD.transformBy(
-            GeomUtil.transformFromTranslation(referenceToCargoX, -referenceToCargoY));
-    public static final Pose2d cargoEOpposite = opposite(cargoE);
-    public static final Pose2d cargoF = referenceD.transformBy(
-            GeomUtil.transformFromTranslation(referenceToCargoX, referenceToCargoY));
-    public static final Pose2d cargoFOpposite = opposite(cargoF);
     public static final Pose2d referenceC =
             new Pose2d(hubCenter, referenceCRotation).transformBy(
                     GeomUtil.transformFromTranslation(tarmacInnerDiameter / 2.0, 0.0));
     public static final Pose2d referenceCOpposite = opposite(referenceC);
-    public static final Pose2d cargoD = referenceC.transformBy(
-            GeomUtil.transformFromTranslation(referenceToCargoX, -referenceToCargoY));
-    public static final Pose2d cargoDOpposite = opposite(cargoD);
     public static final Pose2d referenceB =
             new Pose2d(hubCenter, referenceBRotation).transformBy(
                     GeomUtil.transformFromTranslation(tarmacInnerDiameter / 2.0, 0.0));
     public static final Pose2d referenceBOpposite = opposite(referenceB);
-    public static final Pose2d cargoC = referenceB.transformBy(
-            GeomUtil.transformFromTranslation(referenceToCargoX, referenceToCargoY));
-    public static final Pose2d cargoCOpposite = opposite(cargoC);
     public static final Rotation2d fenderARotation =
             referenceARotation.rotateBy(Rotation2d.fromDegrees(360.0 / 16.0));
     public static final Rotation2d fenderBRotation =
@@ -99,6 +85,23 @@ public final class FieldConstants {
                     GeomUtil.transformFromTranslation(tarmacInnerDiameter / 2.0, 0.0));
     // Opposite reference points
     public static final Pose2d referenceAOpposite = opposite(referenceA);
+    // Cargo points
+    public static final double cornerToCargoY = Units.inchesToMeters(15.56);
+    public static final double referenceToCargoY =
+            (tarmacFullSideLength / 2.0) - cornerToCargoY;
+    public static final double referenceToCargoX = Units.inchesToMeters(40.44);
+    public static final Pose2d cargoE = referenceD.transformBy(
+            GeomUtil.transformFromTranslation(referenceToCargoX, -referenceToCargoY));
+    public static final Pose2d cargoEOpposite = opposite(cargoE);
+    public static final Pose2d cargoF = referenceD.transformBy(
+            GeomUtil.transformFromTranslation(referenceToCargoX, referenceToCargoY));
+    public static final Pose2d cargoFOpposite = opposite(cargoF);
+    public static final Pose2d cargoD = referenceC.transformBy(
+            GeomUtil.transformFromTranslation(referenceToCargoX, -referenceToCargoY));
+    public static final Pose2d cargoDOpposite = opposite(cargoD);
+    public static final Pose2d cargoC = referenceB.transformBy(
+            GeomUtil.transformFromTranslation(referenceToCargoX, referenceToCargoY));
+    public static final Pose2d cargoCOpposite = opposite(cargoC);
     public static final Pose2d cargoA = referenceA.transformBy(
             GeomUtil.transformFromTranslation(referenceToCargoX, -referenceToCargoY));
     // Opposite cargo points
@@ -106,9 +109,6 @@ public final class FieldConstants {
     public static final Pose2d cargoB = referenceA.transformBy(
             GeomUtil.transformFromTranslation(referenceToCargoX, referenceToCargoY));
     public static final Pose2d cargoBOpposite = opposite(cargoB);
-    // Cargo points
-    public static final double cornerToCargoY = Units.inchesToMeters(15.56);
-    public static final double referenceToCargoX = Units.inchesToMeters(40.44);
     // Terminal cargo point
     public static final Rotation2d terminalOuterRotation =
             Rotation2d.fromDegrees(133.75);
@@ -120,10 +120,10 @@ public final class FieldConstants {
     public static final Pose2d terminalCenter =
             new Pose2d(new Translation2d(terminalLength / 2.0, terminalWidth / 2.0),
                     terminalOuterRotation.minus(Rotation2d.fromDegrees(90.0)));
+    public static final double terminalCargoOffset = Units.inchesToMeters(10.43);
     public static final Pose2d cargoG = terminalCenter
             .transformBy(GeomUtil.transformFromTranslation(terminalCargoOffset, 0.0));
     public static final Pose2d cargoGOpposite = opposite(cargoG);
-    public static final double terminalCargoOffset = Units.inchesToMeters(10.43);
 
     // Calculate pose mirror on the opposite side of the field
     private static Pose2d opposite(Pose2d pose) {
