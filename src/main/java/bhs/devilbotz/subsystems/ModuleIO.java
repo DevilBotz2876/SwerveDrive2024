@@ -39,7 +39,10 @@ public interface ModuleIO {
         public double drivePositionMeters = 0.0;
         public double driveVelocityRadPerSec = 0.0;
 
+        public double driveVelocityFilteredRadPerSec = 0.0;
+
         public double driveVolts = 0.0;
+        public double driveAppliedVolts = 0.0;
         public double driveCurrentAmps = 0.0;
         public double driveTempCelcius = 0.0;
 
@@ -48,6 +51,7 @@ public interface ModuleIO {
         public double turnVelocityRadPerSec = 0.0;
 
         public double turnVolts = 0.0;
+        public double turnAppliedVolts = 0.0;
         public double turnCurrentAmps = 0.0;
         public double turnTempCelcius = 0.0;
     }

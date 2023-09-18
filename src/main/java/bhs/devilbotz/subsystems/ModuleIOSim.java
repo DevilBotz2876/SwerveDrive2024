@@ -1,7 +1,6 @@
 package bhs.devilbotz.subsystems;
 
 import bhs.devilbotz.Constants;
-import com.swervedrivespecialties.swervelib.Mk4SwerveModuleHelper;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -9,10 +8,10 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 public class ModuleIOSim implements ModuleIO {
     // L2 swerve module is 6.75:1 drive overall ratio
     private final FlywheelSim driveSim =
-            new FlywheelSim(DCMotor.getFalcon500(1), 6.75, 0.025);
+            new FlywheelSim(DCMotor.getNEO(1), 6.75, 0.025);
     // Swerve module turn ratio is 150/7:1 overall
     private final FlywheelSim turnSim =
-            new FlywheelSim(DCMotor.getFalcon500(1), 150.0 / 7.0, 0.004096955);
+            new FlywheelSim(DCMotor.getNEO(1), 150.0 / 7.0, 0.004096955);
 
     private double turnRelativePositionRad = 0.0;
     private double turnAbsolutePositionRad = Math.random() * 2.0 * Math.PI;
@@ -36,16 +35,15 @@ public class ModuleIOSim implements ModuleIO {
 
         inputs.drivePositionRad = inputs.drivePositionRad
                 + (driveSim.getAngularVelocityRadPerSec() * Constants.loopPeriodSecs);
-        inputs.drivePositionMeters = inputs.drivePositionRad * (Mk4SwerveModuleHelper.GearRatio.L2.getConfiguration().getWheelDiameter() / 2.0);
         inputs.driveVelocityRadPerSec = driveSim.getAngularVelocityRadPerSec();
-        inputs.driveVolts = driveAppliedVolts;
+        inputs.driveAppliedVolts = driveAppliedVolts;
         inputs.driveCurrentAmps = Math.abs(driveSim.getCurrentDrawAmps());
         inputs.driveTempCelcius = 0.0;
 
         inputs.turnAbsolutePositionRad = turnAbsolutePositionRad;
         inputs.turnPositionRad = turnRelativePositionRad;
         inputs.turnVelocityRadPerSec = turnSim.getAngularVelocityRadPerSec();
-        inputs.turnVolts = turnAppliedVolts;
+        inputs.turnAppliedVolts = turnAppliedVolts;
         inputs.turnCurrentAmps = Math.abs(turnSim.getCurrentDrawAmps());
         inputs.turnTempCelcius = 0.0;
     }

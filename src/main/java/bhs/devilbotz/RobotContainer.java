@@ -63,9 +63,9 @@ public class RobotContainer {
         if (Constants.getMode() != Constants.Mode.REPLAY) {
             switch (Constants.getRobot()) {
                 case ROBOT_2024S:
-                    drive = new Drive(new GyroIONAVX(), new ModuleIOFalcon(0),
-                            new ModuleIOFalcon(1), new ModuleIOFalcon(2),
-                            new ModuleIOFalcon(3), pcw);
+                    drive = new Drive(new GyroIONAVX(), new ModuleIOSparkMAX(0),
+                            new ModuleIOSparkMAX(1), new ModuleIOSparkMAX(2),
+                            new ModuleIOSparkMAX(3), pcw);
                     break;
                 case ROBOT_2024SIM:
                     drive = new Drive(new GyroIO() {

@@ -27,25 +27,54 @@ import org.photonvision.EstimatedRobotPose;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * Drive subsystem for the DevilBotz 2024 swerve drive base.
+ * This subsystem is responsible for:
+ * - Handling the swerve module inputs and outputs logic
+ * - Performing the swerve module kinematics
+ * - Performing the swerve module PID control
+ * - Predicting the robot pose using the swerve module positions, gyro, and vision
+ *
+ * @author Parker Meyers
+ * @category Drive
+ * @category Swerve
+ * @category Pose
+ * @category Vision
+ * @category Kinematics
+ * @see ModuleIO
+ * @see GyroIO
+ * @see PhotonCameraWrapper
+ * @see SwerveDriveKinematics
+ * @see SwerveDrivePoseEstimator
+ * @see PIDController
+ * @see SimpleMotorFeedforward
+ */
 public class Drive extends SubsystemBase {
     private static final double maxCoastVelocityMetersPerSec = 0.05; // Need to be under this to
     // switch to coast when disabling
 
+    // Define the IO & Inputs
+    // Gyro
     private final GyroIO gyroIO;
-    private final GyroIOInputsAutoLogged gyroInputs =
-            new GyroIOInputsAutoLogged();
-    private final ModuleIO[] moduleIOs = new ModuleIO[4]; // FL, FR, BL, BR
+    private final GyroIOInputsAutoLogged gyroInputs = new GyroIOInputsAutoLogged();
+    // Swerve Modules (4)
+    // In the order of: FL, FR, BL, BR
+    private final ModuleIO[] moduleIOs = new ModuleIO[4];
     private final ModuleIOInputsAutoLogged[] moduleInputs =
-            new ModuleIOInputsAutoLogged[]{new ModuleIOInputsAutoLogged(),
+            new ModuleIOInputsAutoLogged[]{
                     new ModuleIOInputsAutoLogged(), new ModuleIOInputsAutoLogged(),
-                    new ModuleIOInputsAutoLogged()};
+                    new ModuleIOInputsAutoLogged(), new ModuleIOInputsAutoLogged()};
 
+    // Define limiters
     private final double maxLinearSpeed;
     private final double maxAngularSpeed;
+
+    // Swerve Module Kinematics
     private final double wheelRadius;
     private final double trackWidthX;
     private final double trackWidthY;
 
+    // Define the tunable numbers for the drive PID
     private final LoggedTunableNumber driveKp =
             new LoggedTunableNumber("Drive/DriveKp");
     private final LoggedTunableNumber driveKd =
@@ -55,29 +84,46 @@ public class Drive extends SubsystemBase {
     private final LoggedTunableNumber driveKv =
             new LoggedTunableNumber("Drive/DriveKv");
 
+    // Define the tunable numbers for the turn PID
     private final LoggedTunableNumber turnKp =
             new LoggedTunableNumber("Drive/TurnKp");
     private final LoggedTunableNumber turnKd =
             new LoggedTunableNumber("Drive/TurnKd");
 
+    // Define the kinematics/PID
     private final SwerveDriveKinematics kinematics;
     private final PIDController[] driveFeedback = new PIDController[4];
     private final PIDController[] turnFeedback = new PIDController[4];
     private final double[] lastModulePositionsRad = new double[]{0.0, 0.0, 0.0, 0.0};
+    private final SwerveDrivePoseEstimator poseEstimator;
     private final PhotonCameraWrapper pcw;
     private SimpleMotorFeedforward driveFeedforward;
+    // Define the pose estimators/odometry/vision
     private Pose2d odometryPose = new Pose2d();
-    private final SwerveDrivePoseEstimator poseEstimator;
     private Translation2d fieldVelocity = new Translation2d();
+    private Pose2d visionEstimate = new Pose2d();
+    // Define module states
     private double lastGyroPosRad = 0.0;
     private boolean brakeMode = false;
     private DriveMode driveMode = DriveMode.NORMAL;
     private ChassisSpeeds closedLoopSetpoint = new ChassisSpeeds();
     private double characterizationVoltage = 0.0;
-    private Pose2d visionEstimate = new Pose2d();
 
     /**
-     * Creates a new Drive.
+     * Constructor for the Drive subsystem.
+     *
+     * @param gyroIO     The gyro IO object
+     * @param flModuleIO The front left module IO object
+     * @param frModuleIO The front right module IO object
+     * @param blModuleIO The back left module IO object
+     * @param brModuleIO The back right module IO object
+     * @param pcw        The PhotonCameraWrapper object
+     * @category Constructor
+     * @category Drive
+     * @category Swerve
+     * @see GyroIO
+     * @see ModuleIO
+     * @see PhotonCameraWrapper
      */
     public Drive(GyroIO gyroIO, ModuleIO flModuleIO, ModuleIO frModuleIO,
                  ModuleIO blModuleIO, ModuleIO brModuleIO, PhotonCameraWrapper pcw) {
@@ -88,6 +134,7 @@ public class Drive extends SubsystemBase {
         moduleIOs[2] = blModuleIO;
         moduleIOs[3] = brModuleIO;
 
+        // Set the kinematics, max speeds, and PID values based on the robot
         switch (Constants.getRobot()) {
             case ROBOT_2024S:
                 maxLinearSpeed = Units.feetToMeters(16.3);
@@ -119,6 +166,7 @@ public class Drive extends SubsystemBase {
                 turnKd.initDefault(0.0);
                 break;
             default:
+                // If the robot is not defined, set everything to 0
                 maxLinearSpeed = 0.0;
                 wheelRadius = 0.0;
                 trackWidthX = 0.0;
@@ -134,16 +182,21 @@ public class Drive extends SubsystemBase {
                 break;
         }
 
+        // How much to trust the kinematics model
         Vector<N3> modelStatesDeviation = VecBuilder.fill(0.1, 0.1, 0.1);
+        // How much to trust the vision
         Vector<N3> visionMeasurementDeviation = VecBuilder.fill(0.9, 0.9, 0.9);
 
+        // Create the kinematics, pose estimator, and feedforward
         kinematics = new SwerveDriveKinematics(getModuleTranslations());
         driveFeedforward = new SimpleMotorFeedforward(driveKs.get(), driveKv.get());
         poseEstimator = new SwerveDrivePoseEstimator(kinematics, odometryPose.getRotation(), getModulePositions(),
                 new Pose2d(), modelStatesDeviation, visionMeasurementDeviation);
 
+        // Set the initial vision estimate to the current pose
         visionEstimate = new Pose2d(new Translation2d(0, 0), new Rotation2d(0));
 
+        // Create the PID controllers for each module
         for (int i = 0; i < 4; i++) {
             driveFeedback[i] = new PIDController(driveKp.get(), 0.0, driveKd.get(),
                     Constants.loopPeriodSecs);
@@ -159,8 +212,10 @@ public class Drive extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // Update the gyroIO with the current gyro inputs & log them
         gyroIO.updateInputs(gyroInputs);
         Logger.getInstance().processInputs("Drive/Gyro", gyroInputs);
+        // Update each moduleIO with the current module inputs & log them
         for (int i = 0; i < 4; i++) {
             moduleIOs[i].updateInputs(moduleInputs[i]);
             Logger.getInstance().processInputs("Drive/Module" + i,
@@ -170,6 +225,7 @@ public class Drive extends SubsystemBase {
         // Update objects based on TunableNumbers
         if (driveKp.hasChanged() || driveKd.hasChanged() || driveKs.hasChanged()
                 || driveKv.hasChanged() || turnKp.hasChanged() || turnKd.hasChanged()) {
+            // Update the PID controllers & feedforward
             driveFeedforward =
                     new SimpleMotorFeedforward(driveKs.get(), driveKv.get());
             for (int i = 0; i < 4; i++) {
@@ -187,6 +243,7 @@ public class Drive extends SubsystemBase {
                     new Rotation2d(moduleInputs[i].turnAbsolutePositionRad);
         }
 
+        // Set drive mode and safety for disabled mode
         if (DriverStation.isDisabled()) {
             // Disable output while disabled
             for (int i = 0; i < 4; i++) {
@@ -279,6 +336,7 @@ public class Drive extends SubsystemBase {
         }
 
         // Update odometry
+        // Calculate the change in position of each module
         SwerveModuleState[] measuredStatesDiff = new SwerveModuleState[4];
         for (int i = 0; i < 4; i++) {
             measuredStatesDiff[i] = new SwerveModuleState(
@@ -288,9 +346,12 @@ public class Drive extends SubsystemBase {
             lastModulePositionsRad[i] = moduleInputs[i].drivePositionRad;
         }
 
+        // Convert these measured changes to chassis speeds
         ChassisSpeeds chassisStateDiff =
                 kinematics.toChassisSpeeds(measuredStatesDiff);
-        if (gyroInputs.connected) { // Use gyro for angular change when connected
+        // Update the pose depending on if the gyro is connected
+        if (gyroInputs.connected) {
+            // Use gyro for angular change when connected
             odometryPose =
                     odometryPose.exp(new Twist2d(chassisStateDiff.vxMetersPerSecond,
                             chassisStateDiff.vyMetersPerSecond,
@@ -298,7 +359,8 @@ public class Drive extends SubsystemBase {
 
             // Since we already updated the odometry pose, we can just use the current pose for the odometry class
             poseEstimator.update(odometryPose.getRotation(), getModulePositions());
-        } else { // Fall back to using angular velocity (disconnected or sim)
+        } else {
+            // Fall back to using angular velocity (disconnected or sim)
             odometryPose =
                     odometryPose.exp(new Twist2d(chassisStateDiff.vxMetersPerSecond,
                             chassisStateDiff.vyMetersPerSecond,
@@ -316,6 +378,7 @@ public class Drive extends SubsystemBase {
                     moduleInputs[i].driveVelocityRadPerSec * wheelRadius,
                     turnPositions[i]);
         }
+        // Convert these measured states to chassis speeds
         ChassisSpeeds chassisState = kinematics.toChassisSpeeds(measuredStates);
         fieldVelocity = new Translation2d(chassisState.vxMetersPerSecond,
                 chassisState.vyMetersPerSecond).rotateBy(getRotation());
@@ -324,6 +387,7 @@ public class Drive extends SubsystemBase {
         Optional<EstimatedRobotPose> result =
                 pcw.getEstimatedGlobalPose(poseEstimator.getEstimatedPosition());
 
+        // If an april tag is detected, update the pose estimator
         if (result.isPresent()) {
             EstimatedRobotPose camPose = result.get();
             poseEstimator.addVisionMeasurement(
@@ -335,8 +399,7 @@ public class Drive extends SubsystemBase {
         }
 
         // Log measured states
-        Logger.getInstance().recordOutput("SwerveModuleStates/Measured",
-                measuredStates);
+        Logger.getInstance().recordOutput("SwerveModuleStates/Measured", measuredStates);
 
         // Log odometry pose
         Logger.getInstance().recordOutput("Odometry/Encoders/Robot", odometryPose);
@@ -344,10 +407,10 @@ public class Drive extends SubsystemBase {
         // Log raw vision pose
         Logger.getInstance().recordOutput("Odometry/Vision/Robot", visionEstimate);
 
-        // Log Pose Estimator Pose
+        // Log Fused Pose
         Logger.getInstance().recordOutput("Odometry/FusedOdometry/Robot", poseEstimator.getEstimatedPosition());
 
-        // Enable/disable brake mode
+        // Smartly Enable/disable brake mode
         if (DriverStation.isEnabled()) {
             if (!brakeMode) {
                 brakeMode = true;
@@ -388,6 +451,9 @@ public class Drive extends SubsystemBase {
 
     /**
      * Stops the drive.
+     *
+     * <p> This is equivalent to calling {@link #runVelocity(ChassisSpeeds)} with
+     * no velocity.
      */
     public void stop() {
         runVelocity(new ChassisSpeeds());
@@ -415,14 +481,15 @@ public class Drive extends SubsystemBase {
      * Returns the current odometry pose.
      */
     public Pose2d getPose() {
-        return odometryPose;
+        return poseEstimator.getEstimatedPosition();
     }
 
     /**
-     * Resets the current odometry pose.
+     * Sets the current odometry pose.
      */
     public void setPose(Pose2d pose) {
         odometryPose = pose;
+        poseEstimator.resetPosition(Rotation2d.fromRadians(gyroInputs.yawRad), getModulePositions(), pose);
     }
 
     /**
