@@ -7,6 +7,7 @@ package bhs.devilbotz;
 
 import bhs.devilbotz.commands.DriveWithJoysticks;
 import bhs.devilbotz.commands.DriveWithJoysticks.JoystickMode;
+import bhs.devilbotz.commands.FeedForwardCharacterization;
 import bhs.devilbotz.subsystems.*;
 import bhs.devilbotz.utils.Alert;
 import bhs.devilbotz.utils.GeomUtil;
@@ -90,15 +91,14 @@ public class RobotContainer {
         // Set up auto routines
         autoChooser.addDefaultOption("Do Nothing",
                 new AutoRoutine(AutoPosition.ORIGIN, new InstantCommand()));
-        /*
+
         autoChooser.addOption("Drive Characterization",
                 new AutoRoutine(AutoPosition.ORIGIN,
                         new FeedForwardCharacterization(drive, true,
-                                new FeedForwardCharacterizationData("drive"),
+                                new FeedForwardCharacterization.FeedForwardCharacterizationData("drive"),
                                 drive::runCharacterizationVolts,
                                 drive::getCharacterizationVelocity)));
 
-         */
 
         // Set up choosers
         joystickModeChooser.addDefaultOption("Standard", JoystickMode.STANDARD);
@@ -181,7 +181,6 @@ public class RobotContainer {
     }
 
     public void rumble(double value) {
-        System.out.println("Rumbling");
         driverController.setRumble(GenericHID.RumbleType.kLeftRumble, value);
         driverController.setRumble(GenericHID.RumbleType.kRightRumble, value);
     }

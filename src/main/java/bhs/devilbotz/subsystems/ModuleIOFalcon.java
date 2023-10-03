@@ -12,26 +12,40 @@ import edu.wpi.first.math.util.Units;
 
 import java.util.Objects;
 
+/**
+ * Hardware interface for a swerve module with two Falcon 500s as drive and steer motors
+ */
 public class ModuleIOFalcon implements ModuleIO {
+    // 2 Motor and controller combos
     private final WPI_TalonFX driveFalcon;
     private final WPI_TalonFX turnFalcon;
 
+    // Encoder initialization
     private final CANCoder turnAbsoluteEncoder;
     private final Rotation2d absoluteEncoderOffset;
 
+    // Gear ratios for the module
     private final double driveGearRatio = Mk4SwerveModuleHelper.GearRatio.L3.getConfiguration().getDriveReduction();
     private final double turnGearRatio = Mk4SwerveModuleHelper.GearRatio.L3.getConfiguration().getSteerReduction();
 
+    // 2 integrated Encoders for the motors
     private final TalonFXSensorCollection driveDefaultEncoder;
     private final TalonFXSensorCollection turnRelativeEncoder;
 
+    // Encoder resolution
     private final double driveEncoderTicksPerRevolution = 2048.0;
     private final double turnEncoderTicksPerRevolution = 2048.0;
     private final double turnAbsoluteEncoderTicksPerRevolution = 4096.0;
 
-
+    /**
+     * Initialize the Module
+     *
+     * @param index which module to initialize
+     */
     public ModuleIOFalcon(int index) {
+        // Change the hardware depending on the type of robot
         if (Objects.requireNonNull(Constants.getRobot()) == Constants.RobotType.ROBOT_2024S) {
+            // Depending on the module, initialize the hardware
             switch (index) {
                 case 0:
                     driveFalcon = new WPI_TalonFX(11);
@@ -65,9 +79,11 @@ public class ModuleIOFalcon implements ModuleIO {
             throw new RuntimeException("Invalid robot for ModuleIOFalcon");
         }
 
+        // Reset the falcons
         driveFalcon.configFactoryDefault();
         turnFalcon.configFactoryDefault();
 
+        // Invert the turn falcon
         turnFalcon.setInverted(true);
 
         // Set current limit to 30 amps for drive and 30 amps for turn
@@ -84,12 +100,19 @@ public class ModuleIOFalcon implements ModuleIO {
         turnFalcon.configVoltageCompSaturation(12.0);
         turnFalcon.enableVoltageCompensation(true);
 
+        // Assign the encoder collection
         driveDefaultEncoder = driveFalcon.getSensorCollection();
         turnRelativeEncoder = turnFalcon.getSensorCollection();
 
+        // Reset the encoders
         resetEncoders();
     }
 
+    /**
+     * Update the AK hardware inputs
+     *
+     * @param inputs the inputs to update
+     */
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
         inputs.drivePositionRad = Units.rotationsToRadians(
@@ -114,22 +137,45 @@ public class ModuleIOFalcon implements ModuleIO {
         inputs.turnTempCelcius = turnFalcon.getTemperature();
     }
 
+    /**
+     * Set the drive voltage of the Falcon
+     *
+     * @param volts The voltage to run the falcon at
+     */
     public void setDriveVoltage(double volts) {
         driveFalcon.setVoltage(volts);
     }
 
+    /**
+     * Set the turn voltage of the Falcon
+     *
+     * @param volts The voltage to run the falcon at
+     */
     public void setTurnVoltage(double volts) {
         turnFalcon.setVoltage(volts);
     }
 
+    /**
+     * Set the brake mode of the drive Falcon
+     *
+     * @param enable whether to enable the brake mode or not
+     */
     public void setDriveBrakeMode(boolean enable) {
         driveFalcon.setNeutralMode(enable ? NeutralMode.Brake : NeutralMode.Coast);
     }
 
+    /**
+     * Set the brake mode of the turn Falcon
+     *
+     * @param enable whether to enable the brake mode or not
+     */
     public void setTurnBrakeMode(boolean enable) {
         turnFalcon.setNeutralMode(enable ? NeutralMode.Brake : NeutralMode.Coast);
     }
 
+    /**
+     * Reset the encoders
+     */
     public void resetEncoders() {
         driveDefaultEncoder.setIntegratedSensorPosition(0, 0);
         turnRelativeEncoder.setIntegratedSensorPosition(0, 0);

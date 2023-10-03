@@ -2,9 +2,14 @@ package bhs.devilbotz.subsystems;
 
 import org.littletonrobotics.junction.AutoLog;
 
+/**
+ * The interface for any swerve module connected to the robot
+ */
 public interface ModuleIO {
     /**
      * Updates the set of loggable inputs.
+     *
+     * @param inputs the inputs to update
      */
     default void updateInputs(ModuleIOInputs inputs) {
     }

@@ -6,9 +6,15 @@ import edu.wpi.first.wpilibj.SPI;
 
 import java.util.Objects;
 
+/**
+ * Hardware interface for the NAVX 3 axis gyro
+ */
 public class GyroIONAVX implements GyroIO {
     private final AHRS navx;
 
+    /**
+     * Constructor to initialize the NAVX
+     */
     public GyroIONAVX() {
         if (Objects.requireNonNull(Constants.getRobot()) == Constants.RobotType.ROBOT_2024S) {
             navx = new AHRS(SPI.Port.kMXP);
@@ -17,6 +23,11 @@ public class GyroIONAVX implements GyroIO {
         }
     }
 
+    /**
+     * Update the AK hardware inputs
+     *
+     * @param inputs the inputs to update
+     */
     public void updateInputs(GyroIOInputs inputs) {
         inputs.connected = navx.isConnected();
         inputs.pitchRad = navx.getRawGyroX();

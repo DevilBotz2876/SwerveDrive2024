@@ -2,7 +2,15 @@ package bhs.devilbotz.subsystems;
 
 import org.littletonrobotics.junction.AutoLog;
 
+/**
+ * The interface for any GYRO connected to the robot
+ */
 public interface GyroIO {
+    /**
+     * Updates the set of loggable inputs.
+     *
+     * @param inputs the inputs to update
+     */
     default void updateInputs(GyroIOInputs inputs) {
     }
 

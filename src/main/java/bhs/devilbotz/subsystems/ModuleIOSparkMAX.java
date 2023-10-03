@@ -3,59 +3,77 @@ package bhs.devilbotz.subsystems;
 import bhs.devilbotz.Constants;
 import bhs.devilbotz.utils.SparkMAXBurnManager;
 import bhs.devilbotz.utils.SparkMaxDerivedVelocityController;
+import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.RobotController;
 
+/**
+ * Hardware interface for a swerve module with two Spark MAXs as drive and steer motor controllers
+ */
 public class ModuleIOSparkMAX implements ModuleIO {
+    // 2 Controllers for 2 NEOs
     private final CANSparkMax driveSparkMax;
     private final CANSparkMax turnSparkMax;
 
+    // Encoder Initialization
     private final SparkMaxDerivedVelocityController driveDerivedVelocityController;
     private final RelativeEncoder driveDefaultEncoder;
     private final RelativeEncoder turnRelativeEncoder;
-    private final AnalogInput turnAbsoluteEncoder;
+    private final CANCoder turnAbsoluteEncoder;
+    private final Rotation2d absoluteEncoderOffset;
 
+    // Encoder resolution
     private final double driveAfterEncoderReduction =
             (50.0 / 14.0) * (17.0 / 27.0) * (45.0 / 15.0);
     private final double turnAfterEncoderReduction = 150.0 / 7.0;
 
+    // Booleans for setup
     private final boolean isTurnMotorInverted = true;
-    private final boolean isAbsoluteEncoderInverted = false;
-    private final Rotation2d absoluteEncoderOffset;
+    private final double turnAbsoluteEncoderTicksPerRevolution = 4096.0;
 
+    /**
+     * Initialize the Module
+     *
+     * @param index which module to initialize
+     */
     public ModuleIOSparkMAX(int index) {
+        // Change the hardware depending on the type of robot
         switch (Constants.getRobot()) {
             case ROBOT_2024S:
+                // Depending on the module, initialize the hardware
                 switch (index) {
                     case 0:
-                        driveSparkMax = new CANSparkMax(15, MotorType.kBrushless);
-                        turnSparkMax = new CANSparkMax(11, MotorType.kBrushless);
-                        turnAbsoluteEncoder = new AnalogInput(0);
-                        absoluteEncoderOffset = new Rotation2d(-0.036);
+                        driveSparkMax = new CANSparkMax(10, MotorType.kBrushless);
+                        turnSparkMax = new CANSparkMax(14, MotorType.kBrushless);
+                        turnAbsoluteEncoder = new CANCoder(18);
+                        // TODO: Hardware: Measure absolute encoder offset
+                        absoluteEncoderOffset = new Rotation2d(Units.degreesToRadians(0));
                         break;
                     case 1:
-                        driveSparkMax = new CANSparkMax(12, MotorType.kBrushless);
-                        turnSparkMax = new CANSparkMax(9, MotorType.kBrushless);
-                        turnAbsoluteEncoder = new AnalogInput(1);
-                        absoluteEncoderOffset = new Rotation2d(1.0185);
+                        driveSparkMax = new CANSparkMax(11, MotorType.kBrushless);
+                        turnSparkMax = new CANSparkMax(15, MotorType.kBrushless);
+                        turnAbsoluteEncoder = new CANCoder(19);
+                        // TODO: Hardware: Measure absolute encoder offset
+                        absoluteEncoderOffset = new Rotation2d(Units.degreesToRadians(0));
                         break;
                     case 2:
-                        driveSparkMax = new CANSparkMax(14, MotorType.kBrushless);
-                        turnSparkMax = new CANSparkMax(10, MotorType.kBrushless);
-                        turnAbsoluteEncoder = new AnalogInput(2);
-                        absoluteEncoderOffset = new Rotation2d(1.0705);
+                        driveSparkMax = new CANSparkMax(12, MotorType.kBrushless);
+                        turnSparkMax = new CANSparkMax(16, MotorType.kBrushless);
+                        turnAbsoluteEncoder = new CANCoder(20);
+                        // TODO: Hardware: Measure absolute encoder offset
+                        absoluteEncoderOffset = new Rotation2d(Units.degreesToRadians(0));
                         break;
                     case 3:
                         driveSparkMax = new CANSparkMax(13, MotorType.kBrushless);
-                        turnSparkMax = new CANSparkMax(8, MotorType.kBrushless);
-                        turnAbsoluteEncoder = new AnalogInput(3);
-                        absoluteEncoderOffset = new Rotation2d(0.7465);
+                        turnSparkMax = new CANSparkMax(17, MotorType.kBrushless);
+                        turnAbsoluteEncoder = new CANCoder(21);
+                        // TODO: Hardware: Measure absolute encoder offset
+                        absoluteEncoderOffset = new Rotation2d(Units.degreesToRadians(0));
                         break;
                     default:
                         throw new RuntimeException(
@@ -66,18 +84,23 @@ public class ModuleIOSparkMAX implements ModuleIO {
                 throw new RuntimeException("Invalid robot for ModuleIOSparkMAX");
         }
 
+        // Burn the Spark MAXs depending on their status
         if (SparkMAXBurnManager.shouldBurn()) {
             driveSparkMax.restoreFactoryDefaults();
             turnSparkMax.restoreFactoryDefaults();
         }
 
+        // Invert the turn falcon
         turnSparkMax.setInverted(isTurnMotorInverted);
 
+        // Set the current limit to 30 amps
         driveSparkMax.setSmartCurrentLimit(30);
         turnSparkMax.setSmartCurrentLimit(30);
+        // Enable voltage compensation
         driveSparkMax.enableVoltageCompensation(12.0);
         turnSparkMax.enableVoltageCompensation(12.0);
 
+        // Assign the encoders
         driveDerivedVelocityController =
                 new SparkMaxDerivedVelocityController(driveSparkMax);
         driveDefaultEncoder = driveSparkMax.getEncoder();
@@ -87,12 +110,18 @@ public class ModuleIOSparkMAX implements ModuleIO {
         driveSparkMax.setCANTimeout(0);
         turnSparkMax.setCANTimeout(0);
 
+        // Burn the spark maxes if necessary
         if (SparkMAXBurnManager.shouldBurn()) {
             driveSparkMax.burnFlash();
             turnSparkMax.burnFlash();
         }
     }
 
+    /**
+     * Update the AK hardware inputs
+     *
+     * @param inputs the inputs to update
+     */
     @Override
     public void updateInputs(ModuleIOInputs inputs) {
         inputs.drivePositionRad =
@@ -109,14 +138,9 @@ public class ModuleIOSparkMAX implements ModuleIO {
         inputs.driveCurrentAmps = driveSparkMax.getOutputCurrent();
         inputs.driveTempCelcius = driveSparkMax.getMotorTemperature();
 
-        double absolutePositionPercent =
-                turnAbsoluteEncoder.getVoltage() / RobotController.getVoltage5V();
-        if (isAbsoluteEncoderInverted) {
-            absolutePositionPercent = 1 - absolutePositionPercent;
-        }
-        inputs.turnAbsolutePositionRad =
-                new Rotation2d(absolutePositionPercent * 2.0 * Math.PI)
-                        .minus(absoluteEncoderOffset).getRadians();
+        inputs.turnAbsolutePositionRad = Units.rotationsToRadians(
+                turnAbsoluteEncoder.getAbsolutePosition() / turnAbsoluteEncoderTicksPerRevolution);
+
         inputs.turnPositionRad =
                 Units.rotationsToRadians(turnRelativeEncoder.getPosition())
                         / turnAfterEncoderReduction;
@@ -128,18 +152,38 @@ public class ModuleIOSparkMAX implements ModuleIO {
         inputs.turnTempCelcius = turnSparkMax.getMotorTemperature();
     }
 
+    /**
+     * Set the drive voltage of the Spark MAX
+     *
+     * @param volts The voltage to run the Spark Max at
+     */
     public void setDriveVoltage(double volts) {
         driveSparkMax.setVoltage(volts);
     }
 
+    /**
+     * Set the turn voltage of the Spark MAX
+     *
+     * @param volts The voltage to run the Spark Max at
+     */
     public void setTurnVoltage(double volts) {
         turnSparkMax.setVoltage(volts);
     }
 
+    /**
+     * Set the brake mode of the drive NEO
+     *
+     * @param enable whether to enable the brake mode or not
+     */
     public void setDriveBrakeMode(boolean enable) {
         driveSparkMax.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
     }
 
+    /**
+     * Set the brake mode of the turn NEO
+     *
+     * @param enable whether to enable the brake mode or not
+     */
     public void setTurnBrakeMode(boolean enable) {
         turnSparkMax.setIdleMode(enable ? IdleMode.kBrake : IdleMode.kCoast);
     }

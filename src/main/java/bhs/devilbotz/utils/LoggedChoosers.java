@@ -14,25 +14,22 @@ import java.util.List;
  */
 public class LoggedChoosers extends SubsystemBase {
 
+    // Choosers
     private final SendableChooser<String> joystickModeChooser =
-            new SendableChooser<String>();
+            new SendableChooser<>();
     private final SendableChooser<String> autoRoutineChooser =
-            new SendableChooser<String>();
+            new SendableChooser<>();
     private final SendableChooser<String> demoLinearSpeedLimitChooser =
-            new SendableChooser<String>();
+            new SendableChooser<>();
     private final SendableChooser<String> demoAngularSpeedLimitChooser =
-            new SendableChooser<String>();
+            new SendableChooser<>();
 
     private final ChooserData data = new ChooserData();
 
     public LoggedChoosers() {
         addOptions(joystickModeChooser, List.of("Standard", "Tank"));
         addOptions(autoRoutineChooser,
-                List.of("Do Nothing", "Climb For Fun (TB)", "Climb For Fun (FA*)",
-                        "Score With Force (FA*)", "Score With Force (FB*)", "Taxi (TA)",
-                        "Taxi (TB)", "Taxi (TC)", "Taxi (TD)", "Taxi (FA)", "Taxi (FB)",
-                        "Drive Characterization", "Three Cargo", "Five Cargo",
-                        "Six Cargo"));
+                List.of("Do Nothing"));
         addOptions(demoLinearSpeedLimitChooser, List.of("--Competition Mode--",
                 "Fast Speed (70%)", "Medium Speed (30%)", "Slow Speed (15%)"));
         addOptions(demoAngularSpeedLimitChooser, List.of("--Competition Mode--",

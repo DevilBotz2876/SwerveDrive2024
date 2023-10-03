@@ -50,8 +50,8 @@ import java.util.Optional;
  * @see SimpleMotorFeedforward
  */
 public class Drive extends SubsystemBase {
-    private static final double maxCoastVelocityMetersPerSec = 0.05; // Need to be under this to
-    // switch to coast when disabling
+    // What value to switch the robot to coast while under, needs to be lower then 0.05 to switch to coast while disabling.
+    private static final double maxCoastVelocityMetersPerSec = 0.05;
 
     // Define the IO & Inputs
     // Gyro
@@ -98,10 +98,12 @@ public class Drive extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
     private final PhotonCameraWrapper pcw;
     private SimpleMotorFeedforward driveFeedforward;
+
     // Define the pose estimators/odometry/vision
     private Pose2d odometryPose = new Pose2d();
     private Translation2d fieldVelocity = new Translation2d();
     private Pose2d visionEstimate = new Pose2d();
+
     // Define module states
     private double lastGyroPosRad = 0.0;
     private boolean brakeMode = false;
@@ -137,22 +139,27 @@ public class Drive extends SubsystemBase {
         // Set the kinematics, max speeds, and PID values based on the robot
         switch (Constants.getRobot()) {
             case ROBOT_2024S:
-                maxLinearSpeed = Units.feetToMeters(16.3);
+                // NEO: 14.5 free speed
+                // Falcon: 16.3 free speed
+                maxLinearSpeed = Units.feetToMeters(14.5);
                 wheelRadius = Units.inchesToMeters(2.0);
                 trackWidthX = Units.inchesToMeters(25.0);
                 trackWidthY = Units.inchesToMeters(25.0);
 
+                // TODO: Tune the PID
                 driveKp.initDefault(0.1);
                 driveKd.initDefault(0.0);
+                // TODO: Tune the FF with the FFChar class
                 driveKs.initDefault(0.12349);
                 driveKv.initDefault(0.13477);
 
+                // TODO: Tune the PID
                 turnKp.initDefault(10.0);
                 turnKd.initDefault(0.0);
 
                 break;
             case ROBOT_2024SIM:
-                maxLinearSpeed = Units.feetToMeters(16.3);
+                maxLinearSpeed = Units.feetToMeters(14.5);
                 wheelRadius = Units.inchesToMeters(2.0);
                 trackWidthX = 0.65;
                 trackWidthY = 0.65;
@@ -183,8 +190,14 @@ public class Drive extends SubsystemBase {
         }
 
         // How much to trust the kinematics model
+        // stateStdDevs - Standard deviations of the pose estimate (x position in meters, y position in meters, and
+        // heading in radians). Increase these numbers to trust your state estimate less.
+        // TODO: Tune
         Vector<N3> modelStatesDeviation = VecBuilder.fill(0.1, 0.1, 0.1);
         // How much to trust the vision
+        // visionMeasurementStdDevs - Standard deviations of the vision pose measurement (x position in meters,
+        // y position in meters, and heading in radians). Increase these numbers to trust the vision pose measurement less
+        // TODO: Tune
         Vector<N3> visionMeasurementDeviation = VecBuilder.fill(0.9, 0.9, 0.9);
 
         // Create the kinematics, pose estimator, and feedforward
@@ -459,26 +472,29 @@ public class Drive extends SubsystemBase {
         runVelocity(new ChassisSpeeds());
     }
 
+    /**
+     * Sets the drive mode to X
+     */
     public void goToX() {
         driveMode = DriveMode.X;
     }
 
     /**
-     * Returns the maximum linear speed in meters per sec.
+     * @return the maximum linear speed in meters per sec.
      */
     public double getMaxLinearSpeedMetersPerSec() {
         return maxLinearSpeed;
     }
 
     /**
-     * Returns the maximum angular speed in radians per sec.
+     * @return the maximum angular speed in radians per sec.
      */
     public double getMaxAngularSpeedRadPerSec() {
         return maxAngularSpeed;
     }
 
     /**
-     * Returns the current odometry pose.
+     * @return the current odometry pose.
      */
     public Pose2d getPose() {
         return poseEstimator.getEstimatedPosition();
@@ -486,6 +502,8 @@ public class Drive extends SubsystemBase {
 
     /**
      * Sets the current odometry pose.
+     *
+     * @param pose the post to set the odometry to
      */
     public void setPose(Pose2d pose) {
         odometryPose = pose;
@@ -493,18 +511,21 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Returns the current odometry rotation.
+     * @return the current odometry rotation.
      */
     public Rotation2d getRotation() {
         return odometryPose.getRotation();
     }
 
+    /**
+     * @return the current field velocity
+     */
     public Translation2d getFieldVelocity() {
         return fieldVelocity;
     }
 
     /**
-     * Returns an array of module translations.
+     * @return an array of module translations.
      */
     public Translation2d[] getModuleTranslations() {
         return new Translation2d[]{
@@ -514,6 +535,9 @@ public class Drive extends SubsystemBase {
                 new Translation2d(-trackWidthX / 2.0, -trackWidthY / 2.0)};
     }
 
+    /**
+     * @return the current module positions
+     */
     public SwerveModulePosition[] getModulePositions() {
         SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
         for (int i = 0; i < 4; i++) {
@@ -527,6 +551,8 @@ public class Drive extends SubsystemBase {
 
     /**
      * Runs forwards at the commanded voltage.
+     *
+     * @param volts the voltage to run characterization at
      */
     public void runCharacterizationVolts(double volts) {
         driveMode = DriveMode.CHARACTERIZATION;
@@ -534,7 +560,7 @@ public class Drive extends SubsystemBase {
     }
 
     /**
-     * Returns the average drive velocity in radians/sec.
+     * @return the average drive velocity in radians/sec.
      */
     public double getCharacterizationVelocity() {
         double driveVelocityAverage = 0.0;
@@ -544,6 +570,9 @@ public class Drive extends SubsystemBase {
         return driveVelocityAverage / 4.0;
     }
 
+    /**
+     * The 3 drive modes
+     */
     private enum DriveMode {
         NORMAL, X, CHARACTERIZATION
     }

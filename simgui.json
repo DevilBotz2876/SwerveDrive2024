@@ -2,10 +2,30 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Drive": "Subsystem",
+      "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[2]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[3]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[4]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[5]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[6]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[7]": "PIDController",
+      "/LiveWindow/Ungrouped/PIDController[8]": "PIDController",
+      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/SmartDashboard/Angular Speed Limit": "String Chooser",
       "/SmartDashboard/Auto Routine": "String Chooser",
       "/SmartDashboard/Joystick Mode": "String Chooser",
       "/SmartDashboard/Linear Speed Limit": "String Chooser"
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "photonvision": {
+        "YOUR CAMERA NAME": {
+          "open": true
+        },
+        "open": true
+      }
     }
   }
 }

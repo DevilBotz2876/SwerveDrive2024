@@ -11,8 +11,22 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 
 import java.util.function.Supplier;
 
+/**
+ * Loop-able command responsible for Driving the chassis with Joysticks
+ * This subsystem is responsible for:
+ * <ul>
+ * <li>Handling the inputs from the controller and translating it to drive inputs
+ * <li>Controlling and executing the joystick driving mode
+ * <li>Applying dead-bands, curves, and conversion to velocity
+ * </ul>
+ *
+ * @author Parker Meyers
+ * @category Drive
+ * @category Swerve
+ * @category Control
+ * @see Drive
+ */
 public class DriveWithJoysticks extends CommandBase {
-
     private static final double deadband = 0.1;
     private final Drive drive;
     private final Supplier<Double> leftXSupplier;
@@ -25,7 +39,17 @@ public class DriveWithJoysticks extends CommandBase {
     private final Supplier<Double> autoDriveSupplier;
 
     /**
-     * Creates a new DriveWithJoysticks.
+     * DriveWithJoysticks constructor
+     *
+     * @param drive                     The {@link Drive} subsystem, used to send final velocity
+     * @param leftXSupplier             The left X value from the controller
+     * @param leftYSupplier             The left Y value from the controller
+     * @param rightYSupplier            The right Y value from the controller
+     * @param robotRelativeOverride     Toggle if the robot is field relative or robot relative
+     * @param modeSupplier              Joystick mode from the chooser
+     * @param linearSpeedLimitSupplier  Linear speed limit
+     * @param angularSpeedLimitSupplier Angular speed limit
+     * @param autoDriveSupplier         Supplier for auto driving
      */
     public DriveWithJoysticks(Drive drive, Supplier<Double> leftXSupplier,
                               Supplier<Double> leftYSupplier, Supplier<Double> rightYSupplier,
@@ -46,12 +70,18 @@ public class DriveWithJoysticks extends CommandBase {
         this.autoDriveSupplier = autoDriveSupplier;
     }
 
-    // Called when the command is initially scheduled.
+    /**
+     * Called when the command is initially scheduled.
+     */
     @Override
     public void initialize() {
     }
 
-    // Called every time the scheduler runs while the command is scheduled.
+    /**
+     * Called every time the scheduler runs while the command is scheduled.
+     * Main loop, gets the values from the joystick, applies dead-bands and squaring,
+     * gets the velocity and executes them.
+     */
     @Override
     public void execute() {
         // Get values from double suppliers
@@ -114,18 +144,29 @@ public class DriveWithJoysticks extends CommandBase {
         drive.runVelocity(speeds);
     }
 
-    // Called once the command ends or is interrupted.
+    /**
+     * Called once the command ends or is interrupted.
+     *
+     * @param interrupted whether the command was interrupted/canceled
+     */
     @Override
     public void end(boolean interrupted) {
         drive.stop();
     }
 
-    // Returns true when the command should end.
+    /**
+     * Returns true when the command should end.
+     *
+     * @return if the command is finished
+     */
     @Override
     public boolean isFinished() {
         return false;
     }
 
+    /**
+     * The available modes for the joystick
+     */
     public enum JoystickMode {
         STANDARD, TANK
     }
