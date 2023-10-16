@@ -36,10 +36,16 @@ public class Robot extends LoggedRobot {
     private double autoStart;
     private boolean autoMessagePrinted;
 
+    /**
+     * Robot constructor, called by WPILib
+     */
     public Robot() {
         super(Constants.loopPeriodSecs);
     }
 
+    /**
+     * Called once when the robot is first powered on
+     */
     @Override
     public void robotInit() {
         Logger logger = Logger.getInstance();
@@ -93,6 +99,9 @@ public class Robot extends LoggedRobot {
         robotContainer = new RobotContainer();
     }
 
+    /**
+     * Called periodically while the robot is powered on
+     */
     @Override
     public void robotPeriodic() {
         Threads.setCurrentThreadPriority(true, 99);
@@ -125,6 +134,9 @@ public class Robot extends LoggedRobot {
         Threads.setCurrentThreadPriority(true, 10);
     }
 
+    /**
+     * Called once when the robot is disabled
+     */
     @Override
     public void disabledInit() {
         robotContainer.rumble(1);
@@ -139,10 +151,16 @@ public class Robot extends LoggedRobot {
         }).start();
     }
 
+    /**
+     * Called periodically while the robot is disabled
+     */
     @Override
     public void disabledPeriodic() {
     }
 
+    /**
+     * Called once when autonomous mode is first enabled
+     */
     @Override
     public void autonomousInit() {
         autoStart = Timer.getFPGATimestamp();
@@ -153,10 +171,16 @@ public class Robot extends LoggedRobot {
         }
     }
 
+    /**
+     * Called periodically while autonomous mode is enabled
+     */
     @Override
     public void autonomousPeriodic() {
     }
 
+    /**
+     * Called once when teleop mode is first enabled
+     */
     @Override
     public void teleopInit() {
         if (autoCommand != null) {
@@ -164,24 +188,39 @@ public class Robot extends LoggedRobot {
         }
     }
 
+    /**
+     * Called periodically while teleop mode is enabled
+     */
     @Override
     public void teleopPeriodic() {
     }
 
+    /**
+     * Called once when test mode is first enabled
+     */
     @Override
     public void testInit() {
         // Cancels all running commands at the start of test mode.
         CommandScheduler.getInstance().cancelAll();
     }
 
+    /**
+     * Called periodically while test mode is enabled
+     */
     @Override
     public void testPeriodic() {
     }
 
+    /**
+     * Called once when simulation mode is first enabled
+     */
     @Override
     public void simulationInit() {
     }
 
+    /**
+     * Called periodically while simulation mode is enabled
+     */
     @Override
     public void simulationPeriodic() {
     }

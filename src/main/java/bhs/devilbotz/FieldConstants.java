@@ -28,7 +28,8 @@ public final class FieldConstants {
             Units.inchesToMeters(8.0 * 12.0 + 5.625); // Bottom of tape
     public static final double visionTargetHeightUpper =
             visionTargetHeightLower + Units.inchesToMeters(2.0); // Top of tape
-
+    // Cargo points
+    public static final double cornerToCargoY = Units.inchesToMeters(15.56);
     // Dimensions of hub and tarmac
     public static final Rotation2d centerLineAngle = Rotation2d.fromDegrees(66.0);
     public static final Translation2d hubCenter =
@@ -36,14 +37,14 @@ public final class FieldConstants {
     public static final double tarmacInnerDiameter = Units.inchesToMeters(219.25);
     public static final double tarmacOuterDiameter = Units.inchesToMeters(237.31);
     public static final double tarmacFenderToTip = Units.inchesToMeters(84.75);
+    public static final double tarmacMarkedSideLength =
+            Units.inchesToMeters(82.83); // Length of tape marking outside of tarmac
     public static final double tarmacFullSideLength =
             tarmacInnerDiameter * (Math.sqrt(2.0) - 1.0); // If the tarmac formed a full octagon
     public static final double tarmacMissingSideLength =
             tarmacFullSideLength - tarmacMarkedSideLength; // Length removed b/c of corner cutoff
     public static final double referenceToCargoY =
             (tarmacFullSideLength / 2.0) - cornerToCargoY;
-    public static final double tarmacMarkedSideLength =
-            Units.inchesToMeters(82.83); // Length of tape marking outside of tarmac
     public static final double hubSquareLength =
             tarmacOuterDiameter - (tarmacFenderToTip * 2.0);
     // Reference rotations (angle from hub to each reference point and fender side)
@@ -56,6 +57,7 @@ public final class FieldConstants {
             referenceBRotation.rotateBy(Rotation2d.fromDegrees(360.0 / 8.0));
     public static final Rotation2d referenceDRotation =
             referenceCRotation.rotateBy(Rotation2d.fromDegrees(360.0 / 8.0));
+    public static final double referenceToCargoX = Units.inchesToMeters(40.44);
     public static final Pose2d referenceD =
             new Pose2d(hubCenter, referenceDRotation).transformBy(
                     GeomUtil.transformFromTranslation(tarmacInnerDiameter / 2.0, 0.0));
@@ -106,9 +108,6 @@ public final class FieldConstants {
     public static final Pose2d cargoB = referenceA.transformBy(
             GeomUtil.transformFromTranslation(referenceToCargoX, referenceToCargoY));
     public static final Pose2d cargoBOpposite = opposite(cargoB);
-    // Cargo points
-    public static final double cornerToCargoY = Units.inchesToMeters(15.56);
-    public static final double referenceToCargoX = Units.inchesToMeters(40.44);
     // Terminal cargo point
     public static final Rotation2d terminalOuterRotation =
             Rotation2d.fromDegrees(133.75);
@@ -120,10 +119,10 @@ public final class FieldConstants {
     public static final Pose2d terminalCenter =
             new Pose2d(new Translation2d(terminalLength / 2.0, terminalWidth / 2.0),
                     terminalOuterRotation.minus(Rotation2d.fromDegrees(90.0)));
+    public static final double terminalCargoOffset = Units.inchesToMeters(10.43);
     public static final Pose2d cargoG = terminalCenter
             .transformBy(GeomUtil.transformFromTranslation(terminalCargoOffset, 0.0));
     public static final Pose2d cargoGOpposite = opposite(cargoG);
-    public static final double terminalCargoOffset = Units.inchesToMeters(10.43);
 
     // Calculate pose mirror on the opposite side of the field
     private static Pose2d opposite(Pose2d pose) {

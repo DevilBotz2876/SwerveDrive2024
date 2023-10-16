@@ -183,6 +183,7 @@ public class RobotContainer {
     public void rumble(double value) {
         driverController.setRumble(GenericHID.RumbleType.kLeftRumble, value);
         driverController.setRumble(GenericHID.RumbleType.kRightRumble, value);
+        driverController.setRumble(GenericHID.RumbleType.kBothRumble, value);
     }
 
     public enum AutoPosition {

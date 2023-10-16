@@ -13,10 +13,26 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import java.io.IOException;
 import java.util.Optional;
 
+/**
+ * Wrapper for PhotonCamera and PhotonPoseEstimator
+ *
+ * <p>PhotonCamera is a wrapper for the PhotonVision camera. PhotonPoseEstimator is a wrapper for
+ * the PhotonVision pose estimator. This class is a wrapper for both of those classes. It is
+ * responsible for initializing the PhotonCamera and PhotonPoseEstimator, and providing a method to
+ * get an EstimatedRobotPose from the PhotonPoseEstimator.
+ *
+ * @see PhotonCamera
+ * @see PhotonPoseEstimator
+ * @see EstimatedRobotPose
+ * @see Pose2d
+ */
 public class PhotonCameraWrapper {
     private final PhotonCamera photonCamera;
     private PhotonPoseEstimator photonPoseEstimator;
 
+    /**
+     * Initialize the PhotonCamera and PhotonPoseEstimator
+     */
     public PhotonCameraWrapper() {
         // Change the name of your camera here to whatever it is in the PhotonVision UI.
         photonCamera = new PhotonCamera(VisionConstants.cameraName);
