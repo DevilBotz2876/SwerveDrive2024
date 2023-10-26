@@ -8,6 +8,7 @@ package bhs.devilbotz;
 import bhs.devilbotz.utils.Alert;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -77,7 +78,7 @@ public class Robot extends LoggedRobot {
                 // TODO: Make sure this is the correct path and make it configurable
                 logger.addDataReceiver(new WPILOGWriter("/media/sda1"));
                 logger.addDataReceiver(new NT4Publisher());
-                LoggedPowerDistribution.getInstance();
+                LoggedPowerDistribution.getInstance(0, PowerDistribution.ModuleType.kCTRE);
                 break;
 
             case SIM:
