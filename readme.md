@@ -2,6 +2,7 @@
 Team 2876 
 
 Off season Swerve Drive
+[![CI](https://github.com/DevilBotz2876/SwerveDrive2024/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/DevilBotz2876/SwerveDrive2024/actions/workflows/main.yml)
 
 ### Hardware CAN IDs:
 | **Device** 	| **CAN ID**                                                 	|
