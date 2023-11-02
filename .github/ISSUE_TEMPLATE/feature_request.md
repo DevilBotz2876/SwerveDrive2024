@@ -1,6 +1,6 @@
 ---
-name: ""
-about: ""
+name: "Feature Request"
+about: "Want to add a feature to the robot or have an idea? Open a request!"
 title: ''
 labels: ''
 assignees: ''
