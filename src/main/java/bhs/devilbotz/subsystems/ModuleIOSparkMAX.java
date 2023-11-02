@@ -138,8 +138,8 @@ public class ModuleIOSparkMAX implements ModuleIO {
         inputs.driveCurrentAmps = driveSparkMax.getOutputCurrent();
         inputs.driveTempCelcius = driveSparkMax.getMotorTemperature();
 
-        inputs.turnAbsolutePositionRad = Units.rotationsToRadians(
-                turnAbsoluteEncoder.getAbsolutePosition() / turnAbsoluteEncoderTicksPerRevolution);
+        inputs.turnAbsolutePositionRad =
+                Units.degreesToRadians(turnAbsoluteEncoder.getAbsolutePosition()) - absoluteEncoderOffset.getRadians();
 
         inputs.turnPositionRad =
                 Units.rotationsToRadians(turnRelativeEncoder.getPosition())

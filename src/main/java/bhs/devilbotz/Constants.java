@@ -11,12 +11,12 @@ public class Constants {
     // Default is 20ms (do not change unless you know what you're doing
     public static final double loopPeriodSecs = 0.02;
     // Tuning mode toggle
-    public static final boolean tuningMode = false;
+    public static final boolean tuningMode = true;
     // Which robot to use?
     // Options:
     // - ROBOT_2024S
     // - ROBOT_2024SIM
-    private static final RobotType robot = RobotType.ROBOT_2024SIM;
+    private static final RobotType robot = RobotType.ROBOT_2024S;
 
     // Get the current robot
     public static RobotType getRobot() {
