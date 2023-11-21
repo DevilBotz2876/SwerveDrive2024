@@ -36,7 +36,8 @@ public class DriveWithJoysticks extends CommandBase {
     private final Supplier<JoystickMode> modeSupplier;
     private final Supplier<Double> linearSpeedLimitSupplier;
     private final Supplier<Double> angularSpeedLimitSupplier;
-    private final Supplier<Double> autoDriveSupplier;
+    // private final Supplier<Double> autoDriveSupplier;
+    private final Supplier<Boolean> XModeSupplier;
 
     /**
      * DriveWithJoysticks constructor
@@ -57,7 +58,7 @@ public class DriveWithJoysticks extends CommandBase {
                               Supplier<JoystickMode> modeSupplier,
                               Supplier<Double> linearSpeedLimitSupplier,
                               Supplier<Double> angularSpeedLimitSupplier,
-                              Supplier<Double> autoDriveSupplier) {
+                              Supplier<Double> autoDriveSupplier, Supplier<Boolean> XModeSupplier) {
         addRequirements(drive);
         this.drive = drive;
         this.leftXSupplier = leftXSupplier;
@@ -67,7 +68,8 @@ public class DriveWithJoysticks extends CommandBase {
         this.modeSupplier = modeSupplier;
         this.linearSpeedLimitSupplier = linearSpeedLimitSupplier;
         this.angularSpeedLimitSupplier = angularSpeedLimitSupplier;
-        this.autoDriveSupplier = autoDriveSupplier;
+        // this.autoDriveSupplier = autoDriveSupplier;
+        this.XModeSupplier = XModeSupplier;
     }
 
     /**
@@ -84,6 +86,13 @@ public class DriveWithJoysticks extends CommandBase {
      */
     @Override
     public void execute() {
+        // Check if the robot should go to X mode
+        // X Mode protects the robot against bumps but does not allow driving.
+        if (XModeSupplier.get()) {
+            drive.goToX();
+            return;
+        }
+
         // Get values from double suppliers
         double leftX = leftXSupplier.get();
         double leftY = leftYSupplier.get();

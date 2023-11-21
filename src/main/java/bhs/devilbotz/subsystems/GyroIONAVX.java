@@ -2,6 +2,7 @@ package bhs.devilbotz.subsystems;
 
 import bhs.devilbotz.Constants;
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.SPI;
 
 import java.util.Objects;
@@ -30,11 +31,11 @@ public class GyroIONAVX implements GyroIO {
      */
     public void updateInputs(GyroIOInputs inputs) {
         inputs.connected = navx.isConnected();
-        inputs.pitchRad = navx.getRawGyroX();
+        inputs.pitchRad = Units.degreesToRadians(-navx.getPitch());
         inputs.velocityPitchRadPerSec = navx.getVelocityX();
-        inputs.yawRad = navx.getRawGyroY();
+        inputs.yawRad = Units.degreesToRadians(-navx.getYaw());
         inputs.velocityYawRadPerSec = navx.getVelocityY();
-        inputs.rollRad = navx.getRawGyroZ();
+        inputs.rollRad = Units.degreesToRadians(-navx.getRoll());
         inputs.velocityRollRadPerSec = navx.getVelocityZ();
 
     }

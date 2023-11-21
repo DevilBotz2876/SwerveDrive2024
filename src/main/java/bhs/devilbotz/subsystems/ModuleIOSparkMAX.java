@@ -3,6 +3,7 @@ package bhs.devilbotz.subsystems;
 import bhs.devilbotz.Constants;
 import bhs.devilbotz.utils.SparkMAXBurnManager;
 import bhs.devilbotz.utils.SparkMaxDerivedVelocityController;
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMax.IdleMode;
@@ -25,6 +26,7 @@ public class ModuleIOSparkMAX implements ModuleIO {
   private final RelativeEncoder driveDefaultEncoder;
   private final RelativeEncoder turnRelativeEncoder;
   private final CANCoder turnAbsoluteEncoder;
+
   private final Rotation2d absoluteEncoderOffset;
 
   // Encoder resolution
@@ -50,33 +52,39 @@ public class ModuleIOSparkMAX implements ModuleIO {
             driveSparkMax = new CANSparkMax(10, MotorType.kBrushless);
             turnSparkMax = new CANSparkMax(14, MotorType.kBrushless);
             turnAbsoluteEncoder = new CANCoder(18);
-            // TODO: Hardware: Measure absolute encoder offset
+
+            turnAbsoluteEncoder.configMagnetOffset(51);
             absoluteEncoderOffset = new Rotation2d(Units.degreesToRadians(0));
+
             break;
           case 1:
             driveSparkMax = new CANSparkMax(11, MotorType.kBrushless);
             turnSparkMax = new CANSparkMax(15, MotorType.kBrushless);
             turnAbsoluteEncoder = new CANCoder(19);
-            // TODO: Hardware: Measure absolute encoder offset
+
+            turnAbsoluteEncoder.configMagnetOffset(113);
             absoluteEncoderOffset = new Rotation2d(Units.degreesToRadians(0));
             break;
           case 2:
             driveSparkMax = new CANSparkMax(12, MotorType.kBrushless);
             turnSparkMax = new CANSparkMax(16, MotorType.kBrushless);
             turnAbsoluteEncoder = new CANCoder(20);
-            // TODO: Hardware: Measure absolute encoder offset
+
+            turnAbsoluteEncoder.configMagnetOffset(85);
             absoluteEncoderOffset = new Rotation2d(Units.degreesToRadians(0));
             break;
           case 3:
             driveSparkMax = new CANSparkMax(13, MotorType.kBrushless);
             turnSparkMax = new CANSparkMax(17, MotorType.kBrushless);
             turnAbsoluteEncoder = new CANCoder(21);
-            // TODO: Hardware: Measure absolute encoder offset
+
+            turnAbsoluteEncoder.configMagnetOffset(293);
             absoluteEncoderOffset = new Rotation2d(Units.degreesToRadians(0));
             break;
           default:
             throw new RuntimeException("Invalid module index for ModuleIOSparkMAX");
         }
+        turnAbsoluteEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Unsigned_0_to_360);
         break;
       default:
         throw new RuntimeException("Invalid robot for ModuleIOSparkMAX");
@@ -88,12 +96,14 @@ public class ModuleIOSparkMAX implements ModuleIO {
       turnSparkMax.restoreFactoryDefaults();
     }
 
-    // Invert the turn falcon
+    // Invert the turn spark
     turnSparkMax.setInverted(isTurnMotorInverted);
 
+    driveSparkMax.setInverted(true);
+
     // Set the current limit to 30 amps
-    driveSparkMax.setSmartCurrentLimit(30);
-    turnSparkMax.setSmartCurrentLimit(30);
+    driveSparkMax.setSmartCurrentLimit(18);
+    turnSparkMax.setSmartCurrentLimit(18);
     // Enable voltage compensation
     driveSparkMax.enableVoltageCompensation(12.0);
     turnSparkMax.enableVoltageCompensation(12.0);
@@ -136,8 +146,7 @@ public class ModuleIOSparkMAX implements ModuleIO {
     inputs.driveTempCelcius = driveSparkMax.getMotorTemperature();
 
     inputs.turnAbsolutePositionRad =
-        Units.degreesToRadians(turnAbsoluteEncoder.getAbsolutePosition())
-            - absoluteEncoderOffset.getRadians();
+        Units.degreesToRadians(turnAbsoluteEncoder.getAbsolutePosition()) - absoluteEncoderOffset.getRadians();
 
     inputs.turnPositionRad =
         Units.rotationsToRadians(turnRelativeEncoder.getPosition()) / turnAfterEncoderReduction;

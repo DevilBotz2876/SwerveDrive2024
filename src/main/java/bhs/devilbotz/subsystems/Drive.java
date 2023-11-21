@@ -20,6 +20,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
@@ -147,15 +148,15 @@ public class Drive extends SubsystemBase {
                 trackWidthY = Units.inchesToMeters(25.0);
 
                 // TODO: Tune the PID
-                driveKp.initDefault(0.1);
-                driveKd.initDefault(0.0);
+                driveKp.initDefault(0.015);
+                driveKd.initDefault(0.0009);
                 // TODO: Tune the FF with the FFChar class
-                driveKs.initDefault(0.12349);
-                driveKv.initDefault(0.13477);
+                driveKs.initDefault(0.18475);
+                driveKv.initDefault(0.13439);
 
                 // TODO: Tune the PID
-                turnKp.initDefault(10.0);
-                turnKd.initDefault(0.0);
+                turnKp.initDefault(7.75);
+                turnKd.initDefault(0.08);
 
                 break;
             case ROBOT_2024SIM:
@@ -241,11 +242,20 @@ public class Drive extends SubsystemBase {
             // Update the PID controllers & feedforward
             driveFeedforward =
                     new SimpleMotorFeedforward(driveKs.get(), driveKv.get());
+            System.out.println("Drive Feedforward Updated");
             for (int i = 0; i < 4; i++) {
                 driveFeedback[i].setP(driveKp.get());
                 driveFeedback[i].setD(driveKd.get());
                 turnFeedback[i].setP(turnKp.get());
                 turnFeedback[i].setD(turnKd.get());
+
+                System.out.println("Module " + i + " PID Values Updated");
+                System.out.println("Drive Kp: " + driveKp.get());
+                System.out.println("Drive Kd: " + driveKd.get());
+                System.out.println("Drive Ks: " + driveKs.get());
+                System.out.println("Drive Kv: " + driveKv.get());
+                System.out.println("Turn Kp: " + turnKp.get());
+                System.out.println("Turn Kd: " + turnKd.get());
             }
         }
 
@@ -575,5 +585,11 @@ public class Drive extends SubsystemBase {
      */
     private enum DriveMode {
         NORMAL, X, CHARACTERIZATION
+    }
+
+    /** Set module angle */
+    public void setModuleAngle(int module, double angle) {
+        moduleIOs[module].setTurnVoltage(turnFeedback[module].calculate(
+                moduleInputs[module].turnAbsolutePositionRad, angle));
     }
 }

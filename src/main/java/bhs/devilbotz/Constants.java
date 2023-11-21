@@ -11,7 +11,7 @@ public class Constants {
   // Default is 20ms (do not change unless you know what you're doing
   public static final double loopPeriodSecs = 0.02;
   // Tuning mode toggle
-  public static final boolean tuningMode = false;
+  public static final boolean tuningMode = true;
   // Which robot to use?
   // Options:
   // - ROBOT_2024S
@@ -62,7 +62,7 @@ public class Constants {
   public static class VisionConstants {
     public static final Transform3d robotToCam =
         new Transform3d(
-            new Translation3d(0.5, 0.0, 0.5),
+            new Translation3d(0.5, 0.0, 0.15),
             new Rotation3d(
                 Units.degreesToRadians(0),
                 Units.degreesToRadians(0),
@@ -71,6 +71,6 @@ public class Constants {
     // meter up
     // from center.
     // TODO: Get camera name
-    public static final String cameraName = "YOUR CAMERA NAME";
+    public static final String cameraName = "Logitech_Webcam_C930e";
   }
 }

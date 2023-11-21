@@ -8,6 +8,7 @@ package bhs.devilbotz;
 import bhs.devilbotz.commands.DriveWithJoysticks;
 import bhs.devilbotz.commands.DriveWithJoysticks.JoystickMode;
 import bhs.devilbotz.commands.FeedForwardCharacterization;
+import bhs.devilbotz.commands.WheelPIDCalibration;
 import bhs.devilbotz.subsystems.*;
 import bhs.devilbotz.utils.Alert;
 import bhs.devilbotz.utils.GeomUtil;
@@ -25,6 +26,8 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.StartEndCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import java.util.function.Supplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -51,7 +54,7 @@ public class RobotContainer {
     private final XboxController driverController = new XboxController(0);
     // Subsystems
     private Drive drive;
-    private boolean isFieldRelative = true;
+    private boolean isFieldRelative = false;
 
     /**
      * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -136,13 +139,16 @@ public class RobotContainer {
                     SmartDashboard.putBoolean("Field Relative", isFieldRelative);
                 }).ignoringDisable(true));
         SmartDashboard.putBoolean("Field Relative", isFieldRelative);
+
         drive.setDefaultCommand(new DriveWithJoysticks(drive,
                 () -> -driverController.getLeftY(), () -> -driverController.getLeftX(),
                 () -> -driverController.getRightX(), () -> !isFieldRelative,
                 joystickModeChooser::get,
                 demoLinearSpeedLimitChooser::get,
                 demoAngularSpeedLimitChooser::get,
-                driverController::getRightTriggerAxis));
+                null,
+                () -> driverController.getRightTriggerAxis() > 0.8 && driverController.getLeftTriggerAxis() > 0.8));
+
 
         // Reset gyro command
         Command resetGyroCommand = new InstantCommand(() -> {
@@ -157,9 +163,21 @@ public class RobotContainer {
             }
         }.withTimeout(0.2);
 
-        new Trigger(() -> driverController.getLeftTriggerAxis() > 0.8)
-                .and(new Trigger(() -> driverController.getRightTriggerAxis() > 0.8))
+        new Trigger(driverController::getRightBumper)
+                .and(new Trigger(driverController::getLeftBumper))
                 .onTrue(resetGyroCommand).onTrue(rumbleCommand);
+
+        // Run WheelPIDCalibration command
+        new Trigger(driverController::getBButton)
+                .toggleOnTrue(new WheelPIDCalibration(drive));
+
+        // Run FeedForwardCharacterization command
+        new Trigger(driverController::getXButton)
+                .onTrue(new FeedForwardCharacterization(drive, true,
+                        new FeedForwardCharacterization.FeedForwardCharacterizationData("drive"),
+                        drive::runCharacterizationVolts,
+                        drive::getCharacterizationVelocity));
+
 
         // axis 2 is the left bumper, when it is over 80% pressed, it will run the command
         // axis 3 is the right bumper, when it is over 80% pressed, it will run the command
