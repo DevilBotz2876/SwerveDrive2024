@@ -199,7 +199,7 @@ public class Drive extends SubsystemBase {
         // visionMeasurementStdDevs - Standard deviations of the vision pose measurement (x position in meters,
         // y position in meters, and heading in radians). Increase these numbers to trust the vision pose measurement less
         // TODO: Tune
-        Vector<N3> visionMeasurementDeviation = VecBuilder.fill(0.9, 0.9, 0.9);
+        Vector<N3> visionMeasurementDeviation = VecBuilder.fill(1.5, 1.5, 1.5);
 
         // Create the kinematics, pose estimator, and feedforward
         kinematics = new SwerveDriveKinematics(getModuleTranslations());
