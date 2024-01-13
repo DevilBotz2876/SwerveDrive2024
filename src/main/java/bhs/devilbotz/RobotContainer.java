@@ -5,15 +5,10 @@
 
 package bhs.devilbotz;
 
-import bhs.devilbotz.commands.DriveWithJoysticks;
+import bhs.devilbotz.commands.*;
 import bhs.devilbotz.commands.DriveWithJoysticks.JoystickMode;
-import bhs.devilbotz.commands.FeedForwardCharacterization;
-import bhs.devilbotz.commands.WheelPIDCalibration;
 import bhs.devilbotz.subsystems.*;
-import bhs.devilbotz.utils.Alert;
-import bhs.devilbotz.utils.GeomUtil;
-import bhs.devilbotz.utils.PhotonCameraWrapper;
-import bhs.devilbotz.utils.SparkMAXBurnManager;
+import bhs.devilbotz.utils.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -108,10 +103,12 @@ public class RobotContainer {
         joystickModeChooser.addOption("Tank", JoystickMode.TANK);
         demoLinearSpeedLimitChooser.addDefaultOption("--Competition Mode--", 1.0);
         demoLinearSpeedLimitChooser.addOption("Fast Speed (70%)", 0.7);
+        demoLinearSpeedLimitChooser.addDefaultOption("Medium-Fast Speed (50%)", 0.5);
         demoLinearSpeedLimitChooser.addOption("Medium Speed (30%)", 0.3);
         demoLinearSpeedLimitChooser.addOption("Slow Speed (15%)", 0.15);
         demoAngularSpeedLimitChooser.addDefaultOption("--Competition Mode--", 1.0);
         demoAngularSpeedLimitChooser.addOption("Fast Speed (70%)", 0.7);
+        demoAngularSpeedLimitChooser.addDefaultOption("Medium-Fast Speed (50%)", 0.5);
         demoAngularSpeedLimitChooser.addOption("Medium Speed (30%)", 0.3);
         demoAngularSpeedLimitChooser.addOption("Slow Speed (15%)", 0.15);
 
@@ -167,17 +164,13 @@ public class RobotContainer {
                 .and(new Trigger(driverController::getLeftBumper))
                 .onTrue(resetGyroCommand).onTrue(rumbleCommand);
 
-        // Run WheelPIDCalibration command
-        new Trigger(driverController::getBButton)
-                .toggleOnTrue(new WheelPIDCalibration(drive));
-
+        // TODO: same here
         // Run FeedForwardCharacterization command
         new Trigger(driverController::getXButton)
                 .onTrue(new FeedForwardCharacterization(drive, true,
                         new FeedForwardCharacterization.FeedForwardCharacterizationData("drive"),
                         drive::runCharacterizationVolts,
                         drive::getCharacterizationVelocity));
-
 
         // axis 2 is the left bumper, when it is over 80% pressed, it will run the command
         // axis 3 is the right bumper, when it is over 80% pressed, it will run the command

@@ -78,7 +78,7 @@ dependencies {
     annotationProcessor "org.littletonrobotics.akit.junction:junction-autolog:$akitJson.version"
 
     implementation "gov.nist.math:jama:1.0.3"
-}
+    implementation 'org.java-websocket:Java-WebSocket:1.5.4'}
 
 test{
     useJUnitPlatform()

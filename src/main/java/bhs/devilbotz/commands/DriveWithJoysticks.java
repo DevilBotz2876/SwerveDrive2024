@@ -1,8 +1,10 @@
 package bhs.devilbotz.commands;
 
+import bhs.devilbotz.Constants;
 import bhs.devilbotz.subsystems.Drive;
 import bhs.devilbotz.utils.GeomUtil;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -28,6 +30,7 @@ import java.util.function.Supplier;
  */
 public class DriveWithJoysticks extends CommandBase {
     private static final double deadband = 0.1;
+    private double yawSetpoint = 0.0;
     private final Drive drive;
     private final Supplier<Double> leftXSupplier;
     private final Supplier<Double> leftYSupplier;
@@ -38,6 +41,7 @@ public class DriveWithJoysticks extends CommandBase {
     private final Supplier<Double> angularSpeedLimitSupplier;
     // private final Supplier<Double> autoDriveSupplier;
     private final Supplier<Boolean> XModeSupplier;
+    private PIDController yawController = new PIDController(0.5, 0.0, 0.0);
 
     /**
      * DriveWithJoysticks constructor
@@ -77,6 +81,8 @@ public class DriveWithJoysticks extends CommandBase {
      */
     @Override
     public void initialize() {
+        // set the initial setpoint
+        yawSetpoint = drive.getGyroInputs().yawRad;
     }
 
     /**
@@ -124,7 +130,17 @@ public class DriveWithJoysticks extends CommandBase {
         if (modeSupplier.get() == JoystickMode.TANK) {
             linearVelocity = new Translation2d(linearVelocity.getX(), 0.0);
         }
+/*
+        // Scale the 0-1 of the right joystick to 0-PI for the yaw setpoint
+        yawSetpoint += rightY * Constants.loopPeriodSecs * Math.PI;
 
+        // Apply yaw setpoint
+        yawSetpoint = MathUtil.clamp(yawSetpoint, -Math.PI, Math.PI);
+
+        System.out.println(yawSetpoint);
+        yawController.setSetpoint(yawSetpoint);
+        rightY = yawController.calculate(drive.getGyroInputs().yawRad);
+ */
         // Convert to meters per second
         ChassisSpeeds speeds = new ChassisSpeeds(
                 linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),

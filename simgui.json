@@ -32,6 +32,12 @@
     "Connections": {
       "open": true
     },
+    "Server": {
+      "Publishers": {
+        "open": true
+      },
+      "open": true
+    },
     "visible": true
   }
 }

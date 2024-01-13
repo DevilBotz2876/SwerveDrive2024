@@ -592,4 +592,12 @@ public class Drive extends SubsystemBase {
         moduleIOs[module].setTurnVoltage(turnFeedback[module].calculate(
                 moduleInputs[module].turnAbsolutePositionRad, angle));
     }
+
+    public ModuleIOInputsAutoLogged getModuleInputs(int module) {
+        return moduleInputs[module];
+    }
+
+    public GyroIOInputsAutoLogged getGyroInputs() {
+        return gyroInputs;
+    }
 }

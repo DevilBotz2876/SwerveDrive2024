@@ -33,7 +33,7 @@ public class GyroIONAVX implements GyroIO {
         inputs.connected = navx.isConnected();
         inputs.pitchRad = Units.degreesToRadians(-navx.getPitch());
         inputs.velocityPitchRadPerSec = navx.getVelocityX();
-        inputs.yawRad = Units.degreesToRadians(-navx.getYaw());
+        inputs.yawRad = Units.degreesToRadians(-navx.getFusedHeading());
         inputs.velocityYawRadPerSec = navx.getVelocityY();
         inputs.rollRad = Units.degreesToRadians(-navx.getRoll());
         inputs.velocityRollRadPerSec = navx.getVelocityZ();
